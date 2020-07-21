@@ -1,3 +1,7 @@
 ###changes
 记录将1.10版本中的代码运行在1.11版本时，发现的一些变化：
 1, BatchTableDescriptor(继承自ConnectedTableDescriptor)中的register_table_sink在1.11版本中变成了create_temporary_table。
+
+2,
+1.10 TimestampType默认精度是3
+1.11 TimestampType默认精度是6
