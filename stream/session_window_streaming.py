@@ -13,14 +13,15 @@ from datetime import datetime
 input_file = os.getcwd() + os.sep + "input" + os.sep + "streaming_data.csv"
 
 # Flink SQL connector
-# watermark可以容忍30秒的乱序
+# watermark可以容忍XX秒的乱序
+# 由于示例数据顺序到达，所以不设置延迟时间，否则反而影响实时性
 sql_dml = "CREATE TABLE MySource ( \
  a VARCHAR, \
  b INT, \
  c INT, \
  row_time TIMESTAMP(3),\
  proctime AS PROCTIME(), \
-WATERMARK FOR row_time AS row_time - INTERVAL '30' SECOND \
+WATERMARK FOR row_time AS row_time \
 ) WITH (\
 'connector.type' = 'filesystem', \
 'connector.path' = '{0}',\
@@ -30,7 +31,8 @@ WATERMARK FOR row_time AS row_time - INTERVAL '30' SECOND \
 csv_source_ddl = sql_dml
 
 # 会话窗口示例
-# 统计每窗口时间（5分钟）内，每个用户购买了id为xxx的产品的数量。
+# 会话窗口通过一个间隔时间（gap）来配置，这个间隔定义了非活跃周期的长度
+# 统计每个会话窗口时间，每个用户购买了id为xxx的产品的数量。
 def session_window_streaming():
     s_env = StreamExecutionEnvironment.get_execution_environment()
     # 
@@ -62,7 +64,7 @@ def session_window_streaming():
     # 测试t1
     #t1.select("a, b").insert_into("results")
     # Session Window
-    w1 = Session.with_gap("5.minutes")
+    w1 = Session.with_gap("15.seconds")
     w2 = w1.on("row_time")
     w3 = w2.alias("w")
     # t1.window(Session.with_gap("10.minutes").on("row_time").alias("w")) 
@@ -84,7 +86,7 @@ def session_window_streaming():
     t3 = t2.group_by("w, a, b") # 按字段a, b分组 
     # WindowGroupedTable ------> Table
     
-    # 统计每窗口时间（5分钟）内，每个用户购买了id为xxx的产品的数量。
+    # 统计每窗口时间内，每个用户购买了id为xxx的产品的数量。
     t4 = t3.select("a, b, sum(c) as sum, w.start as start_time, w.end as end_time")
     t4.print_schema()
     t4.insert_into("results")

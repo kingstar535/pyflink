@@ -16,13 +16,15 @@ input_file = os.getcwd() + os.sep + "input" + os.sep + "streaming_data.csv"
 
 # Flink SQL connector
 # watermark可以容忍30秒的乱序
+# 顺序的数据设置watermark影响计算的实时性
+
 sql_dml = "CREATE TABLE MySource ( \
  a VARCHAR, \
  b INT, \
  c INT, \
  row_time TIMESTAMP(3),\
  proctime AS PROCTIME(), \
-WATERMARK FOR row_time AS row_time - INTERVAL '30' SECOND \
+WATERMARK FOR row_time AS row_time - INTERVAL '0' SECOND \
 ) WITH (\
 'connector.type' = 'filesystem', \
 'connector.path' = '{0}',\
@@ -32,7 +34,7 @@ WATERMARK FOR row_time AS row_time - INTERVAL '30' SECOND \
 csv_source_ddl = sql_dml
 
 # 滑动窗口示例
-# 每间隔1分钟，统计窗口时间（5分钟）内，每个用户购买了id为xxx的产品的数量。
+# 每间隔1分钟，统计窗口时间（2分钟）内，每个用户购买的各个产品的数量。
 def slide_window_streaming():
     s_env = StreamExecutionEnvironment.get_execution_environment()
     # 
@@ -64,7 +66,7 @@ def slide_window_streaming():
     # 测试t1
     #t1.select("a, b").insert_into("results")
     # window转换过程......
-    w1 = Slide.over("5.minutes")
+    w1 = Slide.over("2.minutes")
     w2 = w1.every("1.minutes")
     w3 = w2.on("row_time")
     w4 = w3.alias("w")
@@ -91,7 +93,7 @@ def slide_window_streaming():
     t3 = t2.group_by("w, a, b") # 按字段a, b分组 
     # WindowGroupedTable ------> Table
     
-    # 统计每窗口时间（5分钟）内，每个用户购买了id为xxx的产品的数量。
+    # 统计每窗口时间（2分钟）内，每个用户购买了id为xxx的产品的数量。
     t4 = t3.select("a, b, sum(c) as sum, w.start as start_time, w.end as end_time")
     t4.print_schema()
     t4.insert_into("results")

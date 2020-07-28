@@ -1,3 +1,4 @@
+#-*- coding:utf-8 -*-
 import tempfile
 import os
 import shutil
@@ -5,35 +6,20 @@ from pyflink.datastream import StreamExecutionEnvironment, TimeCharacteristic
 from pyflink.table import StreamTableEnvironment, DataTypes, CsvTableSink, WriteMode
 from pyflink.table.descriptors import Schema, FileSystem, OldCsv
 
+# 定义输出路径
 sink_path = os.getcwd() + os.sep + "output" + os.sep + "streaming.csv"
-
-"""
-if os.path.exists(sink_path):
-    if os.path.isfile(sink_path):
-        os.remove(sink_path)
-    else:
-        shutil.rmtree(sink_path)
-"""
+# 创建StreamEnvironment
 s_env = StreamExecutionEnvironment.get_execution_environment()
-# 
+# StreamEnvironment 设置并行度
+# StreamEnvironment 设置时间属性
 s_env.set_parallelism(4)
 s_env.set_stream_time_characteristic(TimeCharacteristic.EventTime)
-#
+# 创建StreamTableEnvironment
 st_env = StreamTableEnvironment.create(s_env) 
-
+# 调用from_elements从list生成Table
 t = st_env.from_elements([(1, 'hi', 'hello'), (2, 'hi', 'hello')], ['a', 'b', 'c'])
 
-"""
-st_env.connect(FileSystem().path(sink_path)).with_format(OldCsv()
-                 .field_delimiter(',')
-                 .field("a", DataTypes.BIGINT())
-                 .field("b", DataTypes.STRING())
-                 .field("c", DataTypes.STRING())).with_schema(Schema()
-                 .field("a", DataTypes.BIGINT())
-                 .field("b", DataTypes.STRING())
-                 .field("c", DataTypes.STRING())).in_append_mode().create_temporary_table("stream_sink")
-"""
-# 
+# 注册TableSink
 st_env.register_table_sink("stream_sink",
                             CsvTableSink(["a", "b", "c"],
                                          [DataTypes.BIGINT(),
