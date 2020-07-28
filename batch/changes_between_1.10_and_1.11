@@ -3,5 +3,8 @@
 1, BatchTableDescriptor(继承自ConnectedTableDescriptor)中的register_table_sink在1.11版本中变成了create_temporary_table。
 
 2,
-1.10 TimestampType默认精度是3
-1.11 TimestampType默认精度是6
+1.10 TimestampType默认精度是6
+1.11 TimestampType默认精度是3
+1.10中，DataTypes.TIMESTAMP()
+1.11中，需要显式指定DataTypes.TIMESTAMP(3)
+
