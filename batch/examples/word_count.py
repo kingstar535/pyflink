@@ -1,4 +1,4 @@
-# 
+# word count示例 
 import os
 from pyflink.table.descriptors import OldCsv
 from pyflink.table.descriptors import Schema
@@ -35,7 +35,7 @@ t1.execute().print()
 gt2 = t1.group_by("word")
 print(type(gt2))
 # GroupedTable------>Table
-t2 = gt2.select("word, count(1) as count")
+t2 = gt2.select("word, count(count) as count") #对count字段进行count
 t2.execute().print()
 t2.insert_into('mySink')
 
