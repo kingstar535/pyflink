@@ -8,3 +8,15 @@
 1.10中，DataTypes.TIMESTAMP()
 1.11中，需要显式指定DataTypes.TIMESTAMP(3)
 
+3,
+1.11中新增TableResult对象，该对象提供print方法，可以打印Table内容。
+使用：Table.execute().print()
+
+4,
+1.11中新增ResultKind对象，通过调用TableResult的get_result_kind方法得到。
+ResultKind定义了返回结果的类型
+SUCCESS = 0
+SUCCESS_WITH_CONTENT = 1
+
+5,
+
